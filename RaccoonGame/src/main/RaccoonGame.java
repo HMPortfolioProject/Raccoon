@@ -2,9 +2,12 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashSet;
 
-import javax.swing.JFrame;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 import constants.LabelConstants;
 
@@ -24,6 +27,15 @@ public class RaccoonGame extends JFrame
 	private GraphicsEnvironment _ge = null;
 	/** 그래픽 디바이스*/
 	private GraphicsDevice _defaultSd = null;
+	/** 버퍼 이미지*/
+	private Image _bufferImage = null;
+	/** 스크린 그래픽*/
+	private Graphics _screenGraphic = null;
+	/** 이미지 : 스테이지*/
+	private Image _stageImg = new ImageIcon( "src/image/stage/BackGround1.png" ).getImage();
+	/** 스테이지 사이즈*/
+	private int _stageWidth = 0;
+	private int _stageHeight = 0;
 
 	/**
 	 * 컨스트럭터
@@ -54,8 +66,6 @@ public class RaccoonGame extends JFrame
 			int width = gds[ 0 ].getDefaultConfiguration().getBounds().width;
 			int height = gds[ 0 ].getDefaultConfiguration().getBounds().height;
 
-			setSize( width / 2, height / 2 );
-
 			setLocation( ( ( width / 2 ) - ( getSize().width / 2 ) ) + gds[ 0 ].getDefaultConfiguration().getBounds().x,
 				( ( height / 2 ) - ( getSize().height / 2 ) ) + gds[ 0 ].getDefaultConfiguration().getBounds().y );
 			setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
@@ -66,10 +76,80 @@ public class RaccoonGame extends JFrame
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow( this );
 		}
 
+		// 초기 사이즈 저장
+		_stageWidth = _stageImg.getWidth( null );
+		_stageHeight = _stageImg.getHeight( null );
+
 		// Alt + Enter키로 풀스크린, 창모드 전환하는 키 리스너 추가
 		addKeyListener( new _FullScreenKeyListener() );
 
 		setVisible( true );
+		setLayout( null );
+	}
+
+	@Override
+	public void paint( Graphics g )
+	{
+		_bufferImage = createImage( getSize().width, getSize().height );
+		_screenGraphic = _bufferImage.getGraphics();
+		_screenDraw( _screenGraphic );
+		g.drawImage( _bufferImage, 0, 0, null );
+	}
+
+	/**
+	 * 해상도에 맞춰 이미지 그리기
+	 * @param graphic
+	 */
+	private void _screenDraw( Graphics graphic )
+	{
+		if( _stageWidth != getSize().width && _stageHeight != getSize().height )
+		{
+			// 스테이지 사이즈와 현재 사이즈가 일치 하지 않을경우 해상도가 변경된 것으로 간주
+			// 풀스크린, 창모드 전환시 이미지 크기 조정
+			_reSizingStage();
+
+			_stageWidth = getSize().width;
+			_stageHeight = getSize().height;
+		}
+		else
+		{
+			graphic.drawImage( _stageImg, 0, 0, null );
+		}
+		repaint();
+	}
+
+	/**
+	 * 이미지 사이즈를 재조정
+	 */
+	private void _reSizingStage()
+	{
+		try
+		{
+			// TODO : path 수정, 스테이지 바뀌는걸 염두해서 재수정 필요
+			String path = "src/image/stage/BackGround1.png";
+			File file = new File( path );
+			Image originStage = ImageIO.read( file );
+
+			Image resizeStage = originStage.getScaledInstance( getSize().width, getSize().height, Image.SCALE_SMOOTH );
+
+			BufferedImage newStage = new BufferedImage( getSize().width, getSize().height, BufferedImage.TYPE_INT_RGB );
+
+			Graphics g = newStage.getGraphics();
+			g.drawImage( resizeStage, 0, 0, null );
+
+			//임시 파일로 생성
+			File temp = File.createTempFile( file.getName(), "png" );
+			ImageIO.write( newStage, "png", temp );
+			// 프로그램 종료시 임시 파일 삭제
+			temp.deleteOnExit();
+
+			_stageImg = new ImageIcon( temp.getAbsolutePath() ).getImage();
+
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -131,6 +211,7 @@ public class RaccoonGame extends JFrame
 					changeScreenMode( _isFullScreen );
 					_isFullScreen = false;
 				}
+				_keyCodeSet.clear();
 			}
 		}
 
