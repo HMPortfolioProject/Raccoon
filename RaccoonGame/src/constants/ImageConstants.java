@@ -121,24 +121,24 @@ public class ImageConstants
 	/********스테이지********/
 	/********************/
 	/** 스테이지 : 첫번째*/
-	public static String STAGE_FIRST = "";
+	public static String STAGE_FIRST = "src/image/stage/Stage_First.png";
 	/** 스테이지 : 두번째*/
-	public static String STAGE_SECOND = "";
+	public static String STAGE_SECOND = "src/image/stage/Stage_Second.png";
 	/** 스테이지 : 세번째*/
-	public static String STAGE_THIRD = "";
+	public static String STAGE_THIRD = "src/image/stage/Stage_Third.png";
 	/** 스테이지 : 네번째*/
-	public static String STAGE_FOURTH = "";
+	public static String STAGE_FOURTH = "src/image/stage/Stage_Fourth.png";
 	/** 스테이지 : 다섯번째*/
-	public static String STAGE_FIFTH = "";
+	public static String STAGE_FIFTH = "src/image/stage/Stage_Fifth.png";
 	/** 스테이지 : 여섯번째*/
-	public static String STAGE_SIXTH = "";
+	public static String STAGE_SIXTH = "src/image/stage/Stage_Sixth.png";
 	/** 스테이지 : 일곱번째*/
-	public static String STAGE_SEVENTH = "";
+	public static String STAGE_SEVENTH = "src/image/stage/Stage_Seventh.png";
 	/** 스테이지 : 여덟번째*/
-	public static String STAGE_EIGHTH = "";
+	public static String STAGE_EIGHTH = "src/image/stage/Stage_Eighth.png";
 	/** 스테이지 : 아홉번째*/
-	public static String STAGE_NINTH = "";
+	public static String STAGE_NINTH = "src/image/stage/Stage_Ninth.png";
 	/** 스테이지 : 열번째*/
-	public static String STAGE_TENTH = "";
+	public static String STAGE_TENTH = "src/image/stage/Stage_Tenth.png";
 
 }
