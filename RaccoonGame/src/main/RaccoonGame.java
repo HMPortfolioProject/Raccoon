@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.HashSet;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -32,10 +32,12 @@ public class RaccoonGame extends JFrame
 	/** 스크린 그래픽*/
 	private Graphics _screenGraphic = null;
 	/** 이미지 : 스테이지*/
-	private Image _stageImg = new ImageIcon( "src/image/stage/BackGround1.png" ).getImage();
+	private Image _stageImg = new ImageIcon( "src/image/stage/Stage_First.png" ).getImage();
 	/** 스테이지 사이즈*/
 	private int _stageWidth = 0;
 	private int _stageHeight = 0;
+	/** 임시파일 스테이지 이미지 리스트*/
+	private HashMap<String, File> _tempStageMap = null;
 
 	/**
 	 * 컨스트럭터
@@ -125,31 +127,78 @@ public class RaccoonGame extends JFrame
 	{
 		try
 		{
+			if( _tempStageMap == null )
+			{
+				_tempStageMap = new HashMap<String, File>();
+			}
+
 			// TODO : path 수정, 스테이지 바뀌는걸 염두해서 재수정 필요
-			String path = "src/image/stage/BackGround1.png";
+			// TODO : 스테이지가 바뀔시 현재 스테이지 이미지 경로를 가져와 path에 대입할수 잇도록 수정 필요
+			String path = "src/image/stage/Stage_First.png";
 			File file = new File( path );
-			Image originStage = ImageIO.read( file );
 
-			Image resizeStage = originStage.getScaledInstance( getSize().width, getSize().height, Image.SCALE_SMOOTH );
+			String replacedName = _repalceFileName( file.getName(), "png" );
 
-			BufferedImage newStage = new BufferedImage( getSize().width, getSize().height, BufferedImage.TYPE_INT_RGB );
+			if( !_tempStageMap.isEmpty() && _tempStageMap.containsKey( replacedName ) )
+			{
+				File temp = _tempStageMap.get( replacedName );
 
-			Graphics g = newStage.getGraphics();
-			g.drawImage( resizeStage, 0, 0, null );
+				_stageImg = new ImageIcon( temp.getAbsolutePath() ).getImage();
+			}
+			else
+			{
+				Image originStage = ImageIO.read( file );
 
-			//임시 파일로 생성
-			File temp = File.createTempFile( file.getName(), "png" );
-			ImageIO.write( newStage, "png", temp );
-			// 프로그램 종료시 임시 파일 삭제
-			temp.deleteOnExit();
+				Image resizeStage = originStage.getScaledInstance( getSize().width, getSize().height, Image.SCALE_SMOOTH );
 
-			_stageImg = new ImageIcon( temp.getAbsolutePath() ).getImage();
+				BufferedImage newStage = new BufferedImage( getSize().width, getSize().height, BufferedImage.TYPE_INT_RGB );
+
+				Graphics g = newStage.getGraphics();
+				g.drawImage( resizeStage, 0, 0, null );
+
+				//임시 파일로 생성
+				File temp = File.createTempFile( replacedName, "png" );
+				ImageIO.write( newStage, "png", temp );
+
+				_tempStageMap.put( replacedName, temp );
+				// 프로그램 종료시 임시 파일 삭제
+				temp.deleteOnExit();
+
+				_stageImg = new ImageIcon( temp.getAbsolutePath() ).getImage();
+			}
 
 		}
 		catch( Exception e )
 		{
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 임시 파일 이름으로 변경
+	 * @param originName
+	 * @param extension
+	 * @return
+	 */
+	private String _repalceFileName( String originName, String extension )
+	{
+		StringBuffer sb = new StringBuffer();
+		sb.append( _getStageName( originName ) );
+		sb.append( "_" );
+		sb.append( String.valueOf( getSize().width ) ).append( "X" ).append( String.valueOf( getSize().height ) );
+		sb.append( "." + extension );
+
+		return sb.toString();
+	}
+
+	/**
+	 * 확장자를 제외한 파일 이름 가져오기
+	 * @param name
+	 * @return
+	 */
+	private String _getStageName( String name )
+	{
+		return name.substring( 0, name.length() - 4 );
 	}
 
 	/**
