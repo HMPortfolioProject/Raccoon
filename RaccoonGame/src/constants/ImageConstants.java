@@ -118,7 +118,7 @@ public class ImageConstants
 	public static String FOOD_WATERMELON = "src/image/food/watermelon.png";
 
 	/********************/
-	/********스테이지********/
+	/********스테이지*******/
 	/********************/
 	/** 스테이지 : 첫번째*/
 	public static String STAGE_FIRST = "src/image/stage/Stage_First.png";
@@ -141,4 +141,9 @@ public class ImageConstants
 	/** 스테이지 : 열번째*/
 	public static String STAGE_TENTH = "src/image/stage/Stage_Tenth.png";
 
+	/*******************/
+	/********배경********/
+	/******************/
+	/** 배경 : 시작 화면*/
+	public static String BACKGROUND_START = "src/image/start/BackGround_Start.png";
 }
