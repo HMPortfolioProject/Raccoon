@@ -2,14 +2,15 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
+import java.util.Timer;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
-import constants.LabelConstants;
+import constants.*;
+import logic.ReSizingImageLogic;
+import thread.GameThread;
 
 /**
  * 너구리 게임 프레임 클래스
@@ -31,13 +32,21 @@ public class RaccoonGame extends JFrame
 	private Image _bufferImage = null;
 	/** 스크린 그래픽*/
 	private Graphics _screenGraphic = null;
+	/** 이미지 : 시작 화면*/
+	private Image _startImg = new ImageIcon( ImageConstants.BACKGROUND_START ).getImage();
 	/** 이미지 : 스테이지*/
-	private Image _stageImg = new ImageIcon( "src/image/stage/Stage_First.png" ).getImage();
-	/** 스테이지 사이즈*/
-	private int _stageWidth = 0;
-	private int _stageHeight = 0;
-	/** 임시파일 스테이지 이미지 리스트*/
-	private HashMap<String, File> _tempStageMap = null;
+	private Image _curStageImg = new ImageIcon( ImageConstants.STAGE_FIRST ).getImage();
+	/** 배경 사이즈*/
+	private int _bgWidth = 0;
+	private int _bgHeight = 0;
+	/** 임시파일 이미지 리스트*/
+	private HashMap<String, File> _tempImgMap = null;
+	/** 게임 전반적인 진행을 지원하는 스레드*/
+	private GameThread _gameThread = new GameThread();
+	/** 시작 화면인지*/
+	private boolean _isStartScreen = true;
+	/** 게임 화면인지*/
+	private boolean _isGameScreen = false;
 
 	/**
 	 * 컨스트럭터
@@ -58,6 +67,39 @@ public class RaccoonGame extends JFrame
 		setLocationRelativeTo( null );
 		setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 
+		_setFrameLocation();
+
+		// 초기 사이즈 저장
+		_bgWidth = _startImg.getWidth( null );
+		_bgHeight = _startImg.getHeight( null );
+
+		if( _tempImgMap == null )
+		{
+			_tempImgMap = new HashMap<String, File>();
+		}
+
+		// Alt + Enter키로 풀스크린, 창모드 전환하는 키 리스너 추가
+		addKeyListener( new GameKeyListener() );
+		// 닫기버튼 클릭시 이벤트
+		addWindowListener( new WindowAdapter()
+		{
+			@Override
+			public void windowClosing( WindowEvent e )
+			{
+				System.exit( 0 );
+			};
+
+		} );
+
+		setVisible( true );
+		setLayout( null );
+	}
+
+	/**
+	 * 화면 위치 설정
+	 */
+	private void _setFrameLocation()
+	{
 		_ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		_defaultSd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		GraphicsDevice[] gds = _ge.getScreenDevices();
@@ -77,16 +119,6 @@ public class RaccoonGame extends JFrame
 		{
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow( this );
 		}
-
-		// 초기 사이즈 저장
-		_stageWidth = _stageImg.getWidth( null );
-		_stageHeight = _stageImg.getHeight( null );
-
-		// Alt + Enter키로 풀스크린, 창모드 전환하는 키 리스너 추가
-		addKeyListener( new _FullScreenKeyListener() );
-
-		setVisible( true );
-		setLayout( null );
 	}
 
 	@Override
@@ -100,105 +132,48 @@ public class RaccoonGame extends JFrame
 
 	/**
 	 * 해상도에 맞춰 이미지 그리기
-	 * @param graphic
+	 * @param g
 	 */
-	private void _screenDraw( Graphics graphic )
+	private void _screenDraw( Graphics g )
 	{
-		if( _stageWidth != getSize().width && _stageHeight != getSize().height )
+		String path = null;
+		if( _isStartScreen )
 		{
-			// 스테이지 사이즈와 현재 사이즈가 일치 하지 않을경우 해상도가 변경된 것으로 간주
-			// 풀스크린, 창모드 전환시 이미지 크기 조정
-			_reSizingStage();
-
-			_stageWidth = getSize().width;
-			_stageHeight = getSize().height;
-		}
-		else
-		{
-			graphic.drawImage( _stageImg, 0, 0, null );
-		}
-		repaint();
-	}
-
-	/**
-	 * 이미지 사이즈를 재조정
-	 */
-	private void _reSizingStage()
-	{
-		try
-		{
-			if( _tempStageMap == null )
+			if( _bgWidth != getSize().width && _bgHeight != getSize().height )
 			{
-				_tempStageMap = new HashMap<String, File>();
-			}
+				// 배경 사이즈와 현재 사이즈가 일치 하지 않을경우 해상도가 변경된 것으로 간주
+				// 풀스크린, 창모드 전환시 이미지 크기 조정
+				path = ImageConstants.BACKGROUND_START;
+				_startImg = ReSizingImageLogic.reSizingImg( this, _tempImgMap, path );
 
-			// TODO : path 수정, 스테이지 바뀌는걸 염두해서 재수정 필요
-			// TODO : 스테이지가 바뀔시 현재 스테이지 이미지 경로를 가져와 path에 대입할수 잇도록 수정 필요
-			String path = "src/image/stage/Stage_First.png";
-			File file = new File( path );
-
-			String replacedName = _repalceFileName( file.getName(), "png" );
-
-			if( !_tempStageMap.isEmpty() && _tempStageMap.containsKey( replacedName ) )
-			{
-				File temp = _tempStageMap.get( replacedName );
-
-				_stageImg = new ImageIcon( temp.getAbsolutePath() ).getImage();
+				_bgWidth = getSize().width;
+				_bgHeight = getSize().height;
 			}
 			else
 			{
-				Image originStage = ImageIO.read( file );
-
-				Image resizeStage = originStage.getScaledInstance( getSize().width, getSize().height, Image.SCALE_SMOOTH );
-
-				BufferedImage newStage = new BufferedImage( getSize().width, getSize().height, BufferedImage.TYPE_INT_RGB );
-
-				Graphics g = newStage.getGraphics();
-				g.drawImage( resizeStage, 0, 0, null );
-
-				//임시 파일로 생성
-				File temp = File.createTempFile( replacedName, "png" );
-				ImageIO.write( newStage, "png", temp );
-
-				_tempStageMap.put( replacedName, temp );
-				// 프로그램 종료시 임시 파일 삭제
-				temp.deleteOnExit();
-
-				_stageImg = new ImageIcon( temp.getAbsolutePath() ).getImage();
+				g.drawImage( _startImg, 0, 0, null );
 			}
-
 		}
-		catch( Exception e )
+		if( _isGameScreen )
 		{
-			e.printStackTrace();
+			if( _bgWidth != getSize().width && _bgHeight != getSize().height )
+			{
+				// 스테이지 사이즈와 현재 사이즈가 일치 하지 않을경우 해상도가 변경된 것으로 간주
+				// 풀스크린, 창모드 전환시 이미지 크기 조정
+				path = ImageConstants.STAGE_FIRST;
+				_curStageImg = ReSizingImageLogic.reSizingImg( this, _tempImgMap, path );
+
+				_bgWidth = getSize().width;
+				_bgHeight = getSize().height;
+			}
+			else
+			{
+				g.drawImage( _curStageImg, 0, 0, null );
+				_gameThread.gameDraw( g );
+
+			}
 		}
-	}
-
-	/**
-	 * 임시 파일 이름으로 변경
-	 * @param originName
-	 * @param extension
-	 * @return
-	 */
-	private String _repalceFileName( String originName, String extension )
-	{
-		StringBuffer sb = new StringBuffer();
-		sb.append( _getStageName( originName ) );
-		sb.append( "_" );
-		sb.append( String.valueOf( getSize().width ) ).append( "X" ).append( String.valueOf( getSize().height ) );
-		sb.append( "." + extension );
-
-		return sb.toString();
-	}
-
-	/**
-	 * 확장자를 제외한 파일 이름 가져오기
-	 * @param name
-	 * @return
-	 */
-	private String _getStageName( String name )
-	{
-		return name.substring( 0, name.length() - 4 );
+		repaint();
 	}
 
 	/**
@@ -222,11 +197,30 @@ public class RaccoonGame extends JFrame
 	}
 
 	/**
+	 * 게임 시작
+	 */
+	private void _gameStart()
+	{
+		Timer loadingTimer = new Timer();
+		TimerTask loadingTask = new TimerTask()
+		{
+			@Override
+			public void run()
+			{
+				_isStartScreen = false;
+				_isGameScreen = true;
+				_gameThread.start();
+			}
+		};
+		loadingTimer.schedule( loadingTask, 2000 );
+	}
+
+	/**
 	 * 풀스크린, 창모드 전환 키리스너
 	 * @author CheonMungi
 	 *
 	 */
-	private class _FullScreenKeyListener implements KeyListener
+	private class GameKeyListener implements KeyListener
 	{
 		/** 입력된 키코드 해시셋*/
 		private HashSet<Integer> _keyCodeSet = new HashSet<Integer>();
@@ -240,6 +234,35 @@ public class RaccoonGame extends JFrame
 			{
 				// Alt키 또는 Enter키가 눌러졌다면 셋에 추가
 				_keyCodeSet.add( Integer.valueOf( e.getKeyCode() ) );
+			}
+			else
+			{
+				switch( e.getKeyCode() )
+				{
+					// TODO : UP,DOWN,LEFT,RIGHT 캐릭터 이동 구현 필요
+					case KeyEvent.VK_KP_UP:
+						break;
+					case KeyEvent.VK_KP_DOWN:
+						break;
+					case KeyEvent.VK_KP_LEFT:
+						break;
+					case KeyEvent.VK_KP_RIGHT:
+						break;
+					case KeyEvent.VK_SPACE:
+						if( _isStartScreen )
+						{
+							// TODO : 게임 시작
+							_gameStart();
+						}
+						else
+						{
+							// TODO : 캐릭터 점프 (짧은 점프, 길제 점프 구현 필요)
+						}
+						break;
+					case KeyEvent.VK_ESCAPE:
+						System.exit( 0 );
+						break;
+				}
 			}
 		}
 
@@ -261,6 +284,29 @@ public class RaccoonGame extends JFrame
 					_isFullScreen = false;
 				}
 				_keyCodeSet.clear();
+				return;
+			}
+			else
+			{
+				_keyCodeSet.clear();
+			}
+
+			switch( e.getKeyCode() )
+			{
+				case KeyEvent.VK_KP_UP:
+					break;
+				case KeyEvent.VK_KP_DOWN:
+					break;
+				case KeyEvent.VK_KP_LEFT:
+					break;
+				case KeyEvent.VK_KP_RIGHT:
+					break;
+				case KeyEvent.VK_SPACE:
+					if( _isGameScreen )
+					{
+						// TODO : 캐릭터 점프 (짧은 점프, 길제 점프 구현 필요)
+					}
+					break;
 			}
 		}
 
