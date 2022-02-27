@@ -25,6 +25,8 @@ public abstract class EnemyAbst
 	protected Image leftDownImage = null;
 	protected Image leftUpImage = null;
 
+	protected GraphicsDevice defaultSd = null;
+
 	/**
 	 * 컨스트럭터
 	 * @param locationX X좌표
@@ -34,6 +36,7 @@ public abstract class EnemyAbst
 	{
 		_locationX = locationX;
 		_locationY = locationY;
+		defaultSd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
 	}
 
@@ -183,7 +186,7 @@ public abstract class EnemyAbst
 	 * 적 캐릭터 이름을 가져옵니다.
 	 * @return 적 캐릭터 이름
 	 */
-	public abstract String getEnemyName();
+	public abstract EnemyEnum getEnemyENUM();
 
 	/**
 	 * 넓이를 가져옵니다.
@@ -202,4 +205,48 @@ public abstract class EnemyAbst
 	 * @return 이동 속도
 	 */
 	public abstract double getSpeed();
+
+	/**
+	 * 적 케릭터 enum클래스
+	 * @author CheonMungi
+	 *
+	 */
+	public enum EnemyEnum
+	{
+			/** ENUM : 초록 지네*/
+			GREEN_CENTIPEDE("Green Centipede"),
+			/** ENUM : 주황 지네*/
+			ORANGE_CENTIPEDE("Orange Centipede"),
+			/** ENUM : 빨강 지네*/
+			RED_CENTIPEDE("Red Centipede"),
+			/** ENUM : 초록 뱀*/
+			GREEN_SNAKE("Green Snake"),
+			/** ENUM : 주황 뱀*/
+			ORANGE_SNAKE("Orange Snake"),
+			/** ENUM : 빨강 뱀*/
+			RED_SNAKE("Red Snake");
+
+		/**
+		 * 값
+		 */
+		private final String _value;
+
+		/**
+		 * 컨스트럭터
+		 * @param value 값
+		 */
+		EnemyEnum( String value )
+		{
+			this._value = value;
+		}
+
+		/**
+		 * enum값을 가져옵니다
+		 * @return
+		 */
+		public String getValue()
+		{
+			return _value;
+		}
+	}
 }

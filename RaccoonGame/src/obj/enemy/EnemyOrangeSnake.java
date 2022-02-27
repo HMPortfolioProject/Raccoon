@@ -4,7 +4,8 @@ import java.awt.Image;
 
 import javax.swing.ImageIcon;
 
-import constants.*;
+import constants.ImageConstants;
+import main.RaccoonGame;
 
 /**
  * 적 캐릭터 : 주황 뱀
@@ -18,10 +19,20 @@ public class EnemyOrangeSnake extends EnemyAbst
 	{
 		super( locationX, locationY );
 
-		rightDownImage = new ImageIcon( ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_DOWN ).getImage();
-		rightUpImage = new ImageIcon( ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_UP ).getImage();
-		leftDownImage = new ImageIcon( ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_DOWN ).getImage();
-		leftUpImage = new ImageIcon( ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_UP ).getImage();
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_FHD_SIZE_WIDTH )
+		{
+			rightDownImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_DOWN ).getImage();
+			rightUpImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_UP ).getImage();
+			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_DOWN ).getImage();
+			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_UP ).getImage();
+		}
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_UHD_SIZE_WIDTH )
+		{
+			rightDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_DOWN ).getImage();
+			rightUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_UP ).getImage();
+			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_DOWN ).getImage();
+			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_UP ).getImage();
+		}
 	}
 
 	@Override
@@ -73,9 +84,9 @@ public class EnemyOrangeSnake extends EnemyAbst
 	}
 
 	@Override
-	public String getEnemyName()
+	public EnemyEnum getEnemyENUM()
 	{
-		return LabelConstants.ORANGE_SNAKE;
+		return EnemyEnum.ORANGE_SNAKE;
 	}
 
 	@Override

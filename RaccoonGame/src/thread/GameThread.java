@@ -1,8 +1,12 @@
 package thread;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.*;
 
+import javax.swing.ImageIcon;
+
+import constants.ImageConstants;
+import main.RaccoonGame;
 import obj.enemy.*;
 import obj.item.Gimlet;
 
@@ -120,13 +124,44 @@ public class GameThread extends Thread
 	 * 이미지 그리기
 	 * @param g
 	 */
-	public void gameDraw( Graphics g )
+	public void gameDraw( Graphics g, boolean isFullScreen )
 	{
 		// TODO : 스테이지 클래스 완성되면 옮겨야 함.(스테이지 마다 위치를 다르게 주기 위해)
 		Iterator<EnemyAbst> enemyIter = _enemyList.iterator();
+
+		int displayWidth = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth();
+
 		while( enemyIter.hasNext() )
 		{
 			EnemyAbst enemy = enemyIter.next();
+			if( isFullScreen )
+			{
+				if( displayWidth == RaccoonGame.FRAME_UHD_SIZE_WIDTH )
+				{
+					// UHD대응
+					_resizedImage( enemy, ImageConstants.DIR_DPI_UHD );
+				}
+				else
+				{
+					// FHD대응
+					_resizedImage( enemy, ImageConstants.DIR_DPI_FHD );
+				}
+			}
+			else
+			{
+				if( displayWidth == RaccoonGame.FRAME_FHD_SIZE_WIDTH )
+				{
+					// UHD대응 - UHD일경우 프레임의 사이즈가 FHD사이즈와 동일하기 때문에
+					// 오브젝트 이미지를 FHD사이즈로 지정
+					_resizedImage( enemy, ImageConstants.DIR_DPI_FHD );
+				}
+				else
+				{
+					// FHD대응 - FHD일경우 프레임의 사이즈가 HD+와 동일하기 때문에
+					// 오브젝트 이미지를 HD+사이즈로 지정
+					_resizedImage( enemy, ImageConstants.DIR_DPI_HD );
+				}
+			}
 			enemy.executeMove( g );
 		}
 
@@ -138,8 +173,58 @@ public class GameThread extends Thread
 		}
 	}
 
+	/**
+	 * 적 케릭터 이미지를 해상도에 맞게 지정합니다
+	 * @param enemy 적 케릭터
+	 * @param windowDPI 해상도 사이즈
+	 */
+	private void _resizedImage( EnemyAbst enemy, String windowDPI )
+	{
+		switch( enemy.getEnemyENUM() )
+		{
+			case GREEN_CENTIPEDE:
+				enemy.setLeftDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_GREEN_CENTIPEDE_DOWN ).getImage() );
+				enemy.setLeftUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_GREEN_CENTIPEDE_UP ).getImage() );
+				enemy.setRightDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_GREEN_CENTIPEDE_DOWN ).getImage() );
+				enemy.setRightUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_GREEN_CENTIPEDE_UP ).getImage() );
+
+				break;
+			case ORANGE_CENTIPEDE:
+				enemy.setLeftDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_ORANGE_CENTIPEDE_DOWN ).getImage() );
+				enemy.setLeftUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_ORANGE_CENTIPEDE_UP ).getImage() );
+				enemy.setRightDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_ORANGE_CENTIPEDE_DOWN ).getImage() );
+				enemy.setRightUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_ORANGE_CENTIPEDE_UP ).getImage() );
+				break;
+			case RED_CENTIPEDE:
+				enemy.setLeftDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_DOWN ).getImage() );
+				enemy.setLeftUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_UP ).getImage() );
+				enemy.setRightDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_DOWN ).getImage() );
+				enemy.setRightUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_UP ).getImage() );
+				break;
+			case GREEN_SNAKE:
+				enemy.setLeftDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_GREEN_SNAKE_DOWN ).getImage() );
+				enemy.setLeftUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_GREEN_SNAKE_UP ).getImage() );
+				enemy.setRightDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_DOWN ).getImage() );
+				enemy.setRightUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_UP ).getImage() );
+				break;
+			case ORANGE_SNAKE:
+				enemy.setLeftDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_DOWN ).getImage() );
+				enemy.setLeftUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_ORANGE_SNAKE_UP ).getImage() );
+				enemy.setRightDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_DOWN ).getImage() );
+				enemy.setRightUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_ORANGE_SNAKE_UP ).getImage() );
+				break;
+			case RED_SNAKE:
+				enemy.setLeftDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_RED_SNAKE_DOWN ).getImage() );
+				enemy.setLeftUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_LEFT_RED_SNAKE_UP ).getImage() );
+				enemy.setRightDownImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_RED_SNAKE_DOWN ).getImage() );
+				enemy.setRightUpImage( new ImageIcon( windowDPI + ImageConstants.ENEMY_RIGHT_RED_SNAKE_UP ).getImage() );
+				break;
+		}
+	}
+
 	private void enemyProcess()
 	{
 		// TODO : 너구리와 닿을시 생명갯수 차감, 게임오버 판정 처리 필요
 	}
+
 }
