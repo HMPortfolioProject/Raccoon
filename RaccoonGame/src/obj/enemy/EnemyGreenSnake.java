@@ -4,7 +4,8 @@ import java.awt.Image;
 
 import javax.swing.ImageIcon;
 
-import constants.*;
+import constants.ImageConstants;
+import main.RaccoonGame;
 
 /**
  * 적 캐릭터 : 초록 뱀
@@ -18,11 +19,20 @@ public class EnemyGreenSnake extends EnemyAbst
 	{
 		super( locationX, locationY );
 
-		rightDownImage = new ImageIcon( ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_DOWN ).getImage();
-		rightUpImage = new ImageIcon( ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_UP ).getImage();
-		leftDownImage = new ImageIcon( ImageConstants.ENEMY_LEFT_GREEN_SNAKE_DOWN ).getImage();
-		leftUpImage = new ImageIcon( ImageConstants.ENEMY_LEFT_GREEN_SNAKE_UP ).getImage();
-
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_FHD_SIZE_WIDTH )
+		{
+			rightDownImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_DOWN ).getImage();
+			rightUpImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_UP ).getImage();
+			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_LEFT_GREEN_SNAKE_DOWN ).getImage();
+			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_LEFT_GREEN_SNAKE_UP ).getImage();
+		}
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_UHD_SIZE_WIDTH )
+		{
+			rightDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_DOWN ).getImage();
+			rightUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_RIGHT_GREEN_SNAKE_UP ).getImage();
+			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_GREEN_SNAKE_DOWN ).getImage();
+			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_GREEN_SNAKE_UP ).getImage();
+		}
 	}
 
 	@Override
@@ -50,9 +60,9 @@ public class EnemyGreenSnake extends EnemyAbst
 	}
 
 	@Override
-	public String getEnemyName()
+	public EnemyEnum getEnemyENUM()
 	{
-		return LabelConstants.GREEN_SNAKE;
+		return EnemyEnum.GREEN_SNAKE;
 	}
 
 	@Override

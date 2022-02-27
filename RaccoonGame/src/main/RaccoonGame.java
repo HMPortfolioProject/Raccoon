@@ -2,14 +2,12 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.util.*;
 import java.util.Timer;
 
 import javax.swing.*;
 
 import constants.*;
-import logic.ReSizingImageLogic;
 import thread.GameThread;
 
 /**
@@ -20,33 +18,43 @@ import thread.GameThread;
 @SuppressWarnings("serial")
 public class RaccoonGame extends JFrame
 {
-	/** 넓이 */
-	protected static int _FRAME_SIZE_WIDTH = 1600;
-	/** 높이 */
-	protected static int _FRAME_SIZE_HEIGHT = 900;
+	/** HD 가로 사이즈 */
+	public static int FRAME_HD_SIZE_WIDTH = 1600;
+	/** HD 세로 사이즈 */
+	public static int FRAME_HD_SIZE_HEIGHT = 900;
+	/** FHD 가로 사이즈*/
+	public static int FRAME_FHD_SIZE_WIDTH = 1920;
+	/** FHD 세로 사이즈*/
+	public static int FRAME_FHD_SIZE_HEIGHT = 1080;
+	/** UHD 가로 사이즈*/
+	public static int FRAME_UHD_SIZE_WIDTH = 3840;
 	/** 그래픽 환경*/
 	private GraphicsEnvironment _ge = null;
-	/** 그래픽 디바이스*/
-	private GraphicsDevice _defaultSd = null;
+	/** 1번 디스플레이*/
+	private GraphicsDevice _gameDisplay = null;
+	/** 2번 디스플레이*/
+	private GraphicsDevice _subDisplay = null;
+	/** 디스플레이 가로 해상도 */
+	private int _dsplayLocationX = 0;
 	/** 버퍼 이미지*/
 	private Image _bufferImage = null;
 	/** 스크린 그래픽*/
 	private Graphics _screenGraphic = null;
 	/** 이미지 : 시작 화면*/
-	private Image _startImg = new ImageIcon( ImageConstants.BACKGROUND_START ).getImage();
+	private Image _startImg = null;
 	/** 이미지 : 스테이지*/
-	private Image _curStageImg = new ImageIcon( ImageConstants.STAGE_FIRST ).getImage();
+	private Image _curStageImg = null;
 	/** 배경 사이즈*/
 	private int _bgWidth = 0;
 	private int _bgHeight = 0;
-	/** 임시파일 이미지 리스트*/
-	private HashMap<String, File> _tempImgMap = null;
 	/** 게임 전반적인 진행을 지원하는 스레드*/
 	private GameThread _gameThread = new GameThread();
 	/** 시작 화면인지*/
 	private boolean _isStartScreen = true;
 	/** 게임 화면인지*/
 	private boolean _isGameScreen = false;
+	/** 현재 풀스크린인지*/
+	private boolean _isFullScreen = false;
 
 	/**
 	 * 컨스트럭터
@@ -62,21 +70,27 @@ public class RaccoonGame extends JFrame
 	private void _init()
 	{
 		setTitle( LabelConstants.GAME_TITLE );
-		setSize( _FRAME_SIZE_WIDTH, _FRAME_SIZE_HEIGHT );
 		setResizable( false );
 		setLocationRelativeTo( null );
 		setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		setIconImage( new ImageIcon( ImageConstants.DIR_DPI_HD + ImageConstants.RACCOON_LEFT_JUMP1 ).getImage() );
+
+		_dsplayLocationX = Toolkit.getDefaultToolkit().getScreenSize().width;
+		_ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		_gameDisplay = _ge.getDefaultScreenDevice();
+
+		if( _ge.getScreenDevices().length == 2 )
+		{
+			_subDisplay = _ge.getScreenDevices()[ 1 ];
+		}
+
+		_setSize();
 
 		_setFrameLocation();
 
 		// 초기 사이즈 저장
 		_bgWidth = _startImg.getWidth( null );
 		_bgHeight = _startImg.getHeight( null );
-
-		if( _tempImgMap == null )
-		{
-			_tempImgMap = new HashMap<String, File>();
-		}
 
 		// Alt + Enter키로 풀스크린, 창모드 전환하는 키 리스너 추가
 		addKeyListener( new GameKeyListener() );
@@ -90,9 +104,29 @@ public class RaccoonGame extends JFrame
 			};
 
 		} );
-
+		addComponentListener( new WindowMoveListener() );
 		setVisible( true );
 		setLayout( null );
+	}
+
+	/**
+	 * 화면 사이즈를 설정합니다.
+	 */
+	private void _setSize()
+	{
+		if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+		{
+			setSize( FRAME_HD_SIZE_WIDTH, FRAME_HD_SIZE_HEIGHT );
+
+			_startImg = new ImageIcon( ImageConstants.DIR_DPI_HD + ImageConstants.BACKGROUND_START ).getImage();
+			_curStageImg = new ImageIcon( ImageConstants.DIR_DPI_HD + ImageConstants.STAGE_FIRST ).getImage();
+		}
+		if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
+		{
+			setSize( FRAME_FHD_SIZE_WIDTH, FRAME_FHD_SIZE_HEIGHT );
+			_startImg = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.BACKGROUND_START ).getImage();
+			_curStageImg = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.STAGE_FIRST ).getImage();
+		}
 	}
 
 	/**
@@ -100,8 +134,6 @@ public class RaccoonGame extends JFrame
 	 */
 	private void _setFrameLocation()
 	{
-		_ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		_defaultSd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		GraphicsDevice[] gds = _ge.getScreenDevices();
 
 		// 모니터 가운데로 화면 위치 설정
@@ -112,7 +144,6 @@ public class RaccoonGame extends JFrame
 
 			setLocation( ( ( width / 2 ) - ( getSize().width / 2 ) ) + gds[ 0 ].getDefaultConfiguration().getBounds().x,
 				( ( height / 2 ) - ( getSize().height / 2 ) ) + gds[ 0 ].getDefaultConfiguration().getBounds().y );
-			setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 			setVisible( true );
 		}
 		else
@@ -136,44 +167,81 @@ public class RaccoonGame extends JFrame
 	 */
 	private void _screenDraw( Graphics g )
 	{
-		String path = null;
-		if( _isStartScreen )
+		try
 		{
-			if( _bgWidth != getSize().width && _bgHeight != getSize().height )
+			if( _isStartScreen )
 			{
-				// 배경 사이즈와 현재 사이즈가 일치 하지 않을경우 해상도가 변경된 것으로 간주
+				//				if( _bgWidth != getSize().width && _bgHeight != getSize().height )
 				// 풀스크린, 창모드 전환시 이미지 크기 조정
-				path = ImageConstants.BACKGROUND_START;
-				_startImg = ReSizingImageLogic.reSizingImg( this, _tempImgMap, path );
-
-				_bgWidth = getSize().width;
-				_bgHeight = getSize().height;
-			}
-			else
-			{
+				_startImg = _changeImg( ImageConstants.BACKGROUND_START );
 				g.drawImage( _startImg, 0, 0, null );
 			}
-		}
-		if( _isGameScreen )
-		{
-			if( _bgWidth != getSize().width && _bgHeight != getSize().height )
+			if( _isGameScreen )
 			{
-				// 스테이지 사이즈와 현재 사이즈가 일치 하지 않을경우 해상도가 변경된 것으로 간주
 				// 풀스크린, 창모드 전환시 이미지 크기 조정
-				path = ImageConstants.STAGE_FIRST;
-				_curStageImg = ReSizingImageLogic.reSizingImg( this, _tempImgMap, path );
-
-				_bgWidth = getSize().width;
-				_bgHeight = getSize().height;
-			}
-			else
-			{
+				_curStageImg = _changeImg( ImageConstants.STAGE_FIFTH );
 				g.drawImage( _curStageImg, 0, 0, null );
-				_gameThread.gameDraw( g );
+				_gameThread.gameDraw( g, _isFullScreen );
 
+			}
+			repaint();
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 이미지를 변경합니다
+	 * @param imgPath 이미지 경로
+	 * @return 이미지
+	 */
+	private Image _changeImg( String imgPath )
+	{
+		Image img = null;
+		if( _isFullScreen )
+		{
+			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+			{
+				// 해상도가 FHD일 경우 이미지를 FHD사이즈로 변경
+				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
 			}
 		}
-		repaint();
+		else
+		{
+			// 창모드
+			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+			{
+				// 해상도가 FHD일 경우 이미지를 HD사이즈로 변경
+				img = new ImageIcon( ImageConstants.DIR_DPI_HD + imgPath ).getImage();
+			}
+		}
+
+		//		if( _isFullScreen )
+		//		{
+		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+		//			{
+		//				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
+		//			}
+		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
+		//			{
+		//				img = new ImageIcon( ImageConstants.DIR_DPI_UHD + imgPath ).getImage();
+		//			}
+		//		}
+		//		else
+		//		{
+		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+		//			{
+		//				img = new ImageIcon( ImageConstants.DIR_DPI_HD + imgPath ).getImage();
+		//			}
+		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
+		//			{
+		//				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
+		//			}
+		//		}
+
+		return img;
 	}
 
 	/**
@@ -184,16 +252,18 @@ public class RaccoonGame extends JFrame
 	{
 		if( isFullScreen )
 		{
+			// 게임 화면 위치가 서브 모니터에 있을때, 서브모니터 상의 전체화면을 해제
 			dispose();
-			_defaultSd.setFullScreenWindow( null );
-			setVisible( true );
+			_gameDisplay.setFullScreenWindow( null );
 		}
 		else
 		{
+			// 게임 화면 위치가 서브 모니터에 있을때, 서브모니터 상의 전체화면을 해제
 			dispose();
-			_defaultSd.setFullScreenWindow( this );
-			setVisible( true );
+			_gameDisplay.setFullScreenWindow( this );
+
 		}
+		setVisible( true );
 	}
 
 	/**
@@ -220,12 +290,11 @@ public class RaccoonGame extends JFrame
 	 * @author CheonMungi
 	 *
 	 */
-	private class GameKeyListener implements KeyListener
+	private class GameKeyListener extends KeyAdapter
 	{
+
 		/** 입력된 키코드 해시셋*/
 		private HashSet<Integer> _keyCodeSet = new HashSet<Integer>();
-		/** 현재 풀스크린인지*/
-		private boolean _isFullScreen = false;
 
 		@Override
 		public void keyPressed( KeyEvent e )
@@ -251,7 +320,6 @@ public class RaccoonGame extends JFrame
 					case KeyEvent.VK_SPACE:
 						if( _isStartScreen )
 						{
-							// TODO : 게임 시작
 							_gameStart();
 						}
 						else
@@ -309,11 +377,49 @@ public class RaccoonGame extends JFrame
 					break;
 			}
 		}
+	}
+
+	/**
+	 * 게임화면 모니터간 이동 감시 리스너
+	 * @author CheonMungi
+	 *
+	 */
+	protected class WindowMoveListener extends ComponentAdapter
+	{
+		/** 서브 디스플레이로 이동했는지*/
+		private boolean _isMoved2Sub = false;
 
 		@Override
-		public void keyTyped( KeyEvent e )
+		public void componentMoved( ComponentEvent e )
 		{
-			// TODO Auto-generated method stub
+			if( getLocation().x <= _dsplayLocationX && !_isMoved2Sub || _isFullScreen )
+			{
+				// 게임 화면이 메인 디스플레이에 있는 경우는 그대로 리턴
+				return;
+			}
+
+			if( getLocation().x > _dsplayLocationX && _subDisplay != null )
+			{
+				if( !_isMoved2Sub )
+				{
+					// 게임 화면이 서브디스플레이로 이동한 경우
+					_gameDisplay = _ge.getScreenDevices()[ 1 ];
+					_subDisplay = _ge.getDefaultScreenDevice();
+
+					_isMoved2Sub = true;
+				}
+			}
+			if( getLocation().x <= _dsplayLocationX && _subDisplay != null )
+			{
+				if( _isMoved2Sub )
+				{
+					// 게임 화면이 서브 디스플레이에서 메인 디스플레이로 되돌아간 경우
+					_gameDisplay = _ge.getDefaultScreenDevice();
+					_subDisplay = _ge.getScreenDevices()[ 1 ];
+
+					_isMoved2Sub = false;
+				}
+			}
 		}
 	}
 }

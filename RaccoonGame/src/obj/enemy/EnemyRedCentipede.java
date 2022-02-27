@@ -4,7 +4,8 @@ import java.awt.Image;
 
 import javax.swing.ImageIcon;
 
-import constants.*;
+import constants.ImageConstants;
+import main.RaccoonGame;
 
 /**
  * 적 캐릭터 : 빨강 지네
@@ -18,10 +19,20 @@ public class EnemyRedCentipede extends EnemyAbst
 	{
 		super( locationX, locationY );
 
-		rightDownImage = new ImageIcon( ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_DOWN ).getImage();
-		rightUpImage = new ImageIcon( ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_UP ).getImage();
-		leftDownImage = new ImageIcon( ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_DOWN ).getImage();
-		leftUpImage = new ImageIcon( ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_UP ).getImage();
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_FHD_SIZE_WIDTH )
+		{
+			rightDownImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_DOWN ).getImage();
+			rightUpImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_UP ).getImage();
+			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_DOWN ).getImage();
+			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_UP ).getImage();
+		}
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_UHD_SIZE_WIDTH )
+		{
+			rightDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_DOWN ).getImage();
+			rightUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_RIGHT_RED_CENTIPEDE_UP ).getImage();
+			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_DOWN ).getImage();
+			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_UP ).getImage();
+		}
 
 	}
 
@@ -50,9 +61,9 @@ public class EnemyRedCentipede extends EnemyAbst
 	}
 
 	@Override
-	public String getEnemyName()
+	public EnemyEnum getEnemyENUM()
 	{
-		return LabelConstants.RED_CENTIPEDE;
+		return EnemyEnum.RED_CENTIPEDE;
 	}
 
 	@Override
