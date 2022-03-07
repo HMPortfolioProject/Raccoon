@@ -33,6 +33,8 @@ public class EnemyOrangeCentipede extends EnemyAbst
 			leftDownImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_ORANGE_CENTIPEDE_DOWN ).getImage();
 			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_ORANGE_CENTIPEDE_UP ).getImage();
 		}
+
+		setDefaultSpeed( 3 );
 	}
 
 	@Override
@@ -77,12 +79,6 @@ public class EnemyOrangeCentipede extends EnemyAbst
 	{
 		// 이미지 세로 사이즈는 다 동일하므로 아무거나 상관없음
 		return getLeftDownImage().getHeight( null );
-	}
-
-	@Override
-	public double getSpeed()
-	{
-		return 3;
 	}
 
 	@Override

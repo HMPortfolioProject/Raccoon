@@ -171,7 +171,6 @@ public class RaccoonGame extends JFrame
 		{
 			if( _isStartScreen )
 			{
-				//				if( _bgWidth != getSize().width && _bgHeight != getSize().height )
 				// 풀스크린, 창모드 전환시 이미지 크기 조정
 				_startImg = _changeImg( ImageConstants.BACKGROUND_START );
 				g.drawImage( _startImg, 0, 0, null );
@@ -181,6 +180,7 @@ public class RaccoonGame extends JFrame
 				// 풀스크린, 창모드 전환시 이미지 크기 조정
 				_curStageImg = _changeImg( ImageConstants.STAGE_FIFTH );
 				g.drawImage( _curStageImg, 0, 0, null );
+
 				_gameThread.gameDraw( g, _isFullScreen );
 
 			}
@@ -202,7 +202,12 @@ public class RaccoonGame extends JFrame
 		Image img = null;
 		if( _isFullScreen )
 		{
-			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
+			{
+				// 해상도가 UHD일 경우 이미지를 UHD사이즈로 변경
+				img = new ImageIcon( ImageConstants.DIR_DPI_UHD + imgPath ).getImage();
+			}
+			else
 			{
 				// 해상도가 FHD일 경우 이미지를 FHD사이즈로 변경
 				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
@@ -211,36 +216,17 @@ public class RaccoonGame extends JFrame
 		else
 		{
 			// 창모드
-			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
+			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
+			{
+				// 해상도가 UHD일 경우 이미지를 FHD사이즈로 변경
+				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
+			}
+			else
 			{
 				// 해상도가 FHD일 경우 이미지를 HD사이즈로 변경
 				img = new ImageIcon( ImageConstants.DIR_DPI_HD + imgPath ).getImage();
 			}
 		}
-
-		//		if( _isFullScreen )
-		//		{
-		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
-		//			{
-		//				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
-		//			}
-		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
-		//			{
-		//				img = new ImageIcon( ImageConstants.DIR_DPI_UHD + imgPath ).getImage();
-		//			}
-		//		}
-		//		else
-		//		{
-		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_FHD_SIZE_WIDTH )
-		//			{
-		//				img = new ImageIcon( ImageConstants.DIR_DPI_HD + imgPath ).getImage();
-		//			}
-		//			if( _gameDisplay.getDisplayMode().getWidth() == FRAME_UHD_SIZE_WIDTH )
-		//			{
-		//				img = new ImageIcon( ImageConstants.DIR_DPI_FHD + imgPath ).getImage();
-		//			}
-		//		}
-
 		return img;
 	}
 
@@ -261,8 +247,15 @@ public class RaccoonGame extends JFrame
 			// 게임 화면 위치가 서브 모니터에 있을때, 서브모니터 상의 전체화면을 해제
 			dispose();
 			_gameDisplay.setFullScreenWindow( this );
+			_gameThread.reSettingObjectProp( isFullScreen );
 
 		}
+
+		if( _gameThread != null )
+		{
+			_gameThread.reSettingObjectProp( isFullScreen );
+		}
+
 		setVisible( true );
 	}
 
