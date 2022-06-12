@@ -1,10 +1,11 @@
 package obj.item;
 
-import java.awt.Image;
+import java.awt.*;
 
 import javax.swing.ImageIcon;
 
 import constants.ImageConstants;
+import main.RaccoonGame;
 
 /**
  * 압정 클래스
@@ -14,15 +15,20 @@ import constants.ImageConstants;
 public class Gimlet
 {
 	/** X좌표*/
-	private int _locationX = 0;
+	private double _locationX = 0;
 	/** Y좌표*/
-	private int _locationY = 0;
+	private double _locationY = 0;
+	/** X좌표 초기값*/
+	private double _defaultLocationX = 0;
+	/** Y좌표 초기값*/
+	private double _defaultLocationY = 0;
+
 	/** 압정 이미지*/
-	private Image _img = new ImageIcon( ImageConstants.ENEMY_GIMLET ).getImage();
+	private Image _img = null;
 	/** 이미지 가로 사이즈 */
-	private int _width = _img.getWidth( null );
+	private int _width = 0;
 	/** 이미지 세로 사이즈*/
-	private int _height = _img.getHeight( null );
+	private int _height = 0;
 
 	/**
 	 * 컨스트럭터
@@ -33,13 +39,29 @@ public class Gimlet
 	{
 		_locationX = locationX;
 		_locationY = locationY;
+		_defaultLocationX = locationX;
+		_defaultLocationY = locationY;
+
+		GraphicsDevice defaultSd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_FHD_SIZE_WIDTH )
+		{
+			_img = new ImageIcon( ImageConstants.DIR_DPI_FHD + ImageConstants.ENEMY_GIMLET ).getImage();
+		}
+		if( defaultSd.getDisplayMode().getWidth() == RaccoonGame.FRAME_UHD_SIZE_WIDTH )
+		{
+			_img = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_GIMLET ).getImage();
+		}
+
+		_width = _img.getWidth( null );
+		_height = _img.getHeight( null );
 	}
 
 	/**
 	 * X좌표를 설정합니다.
 	 * @param locationX X좌표
 	 */
-	public void setLocationX( int locationX )
+	public void setLocationX( double locationX )
 	{
 		_locationX = locationX;
 	}
@@ -48,7 +70,7 @@ public class Gimlet
 	 * X좌표를 가져옵니다.
 	 * @return X좌표
 	 */
-	public int getLocationX()
+	public double getLocationX()
 	{
 		return _locationX;
 	}
@@ -57,7 +79,7 @@ public class Gimlet
 	 * Y좌표를 설정합니다.
 	 * @param locationY Y좌표
 	 */
-	public void setLocationY( int locationY )
+	public void setLocationY( double locationY )
 	{
 		_locationY = locationY;
 	}
@@ -66,9 +88,27 @@ public class Gimlet
 	 * Y좌표를 가져옵니다.
 	 * @return Y좌표
 	 */
-	public int getLcationY()
+	public double getLocationY()
 	{
 		return _locationY;
+	}
+
+	/**
+	 * X좌표의 초기값을 가져옵니다.
+	 * @return X좌표 초기값
+	 */
+	public double getDefaultLocationX()
+	{
+		return _defaultLocationX;
+	}
+
+	/**
+	 * Y좌표의 초기값을 가져옵니다.
+	 * @return Y좌표 초기값
+	 */
+	public double getDefaultLocationY()
+	{
+		return _defaultLocationY;
 	}
 
 	/**

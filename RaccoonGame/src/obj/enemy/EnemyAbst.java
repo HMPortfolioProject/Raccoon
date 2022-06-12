@@ -10,15 +10,23 @@ import java.awt.*;
 public abstract class EnemyAbst
 {
 	/** X좌표*/
-	private int _locationX = 0;
+	private double _locationX = 0;
 	/** Y좌표*/
-	private int _locationY = 0;
+	private double _locationY = 0;
+	/** 초기 Y좌표*/
+	private double _defaultLocationY = 0;
+
 	/** 오른쪽으로 움직이는지*/
 	private boolean _isRight = true;
 	/** 왼쪽으로 움직이는지*/
 	private boolean _isLeft = false;
 
 	private boolean _isChange = false;
+
+	/** 이동 속도*/
+	private double _speed = 0;
+	/** 이동 속도 초기값*/
+	private double _defaultSpeed = 0;
 
 	protected Image rightDownImage = null;
 	protected Image rightUpImage = null;
@@ -44,10 +52,10 @@ public abstract class EnemyAbst
 	 * 적 캐릭터의 이동을 실행
 	 * @param g 그래픽
 	 */
-	public void executeMove( Graphics g )
+	public void executeMove( Graphics g, double maxLocationX )
 	{
 		double speed = getSpeed();
-		_move( g, speed );
+		_move( g, speed, maxLocationX );
 	}
 
 	/**
@@ -55,14 +63,14 @@ public abstract class EnemyAbst
 	 * @param g 그래픽
 	 * @param speed 이동 속도
 	 */
-	private void _move( Graphics g, double speed )
+	private void _move( Graphics g, double speed, double maxLocationX )
 	{
 		if( _locationX <= 95 )
 		{
 			_isRight = true;
 			_isLeft = false;
 		}
-		if( _locationX >= 1350 )
+		if( _locationX >= maxLocationX )
 		{
 			_isRight = false;
 			_isLeft = true;
@@ -72,12 +80,12 @@ public abstract class EnemyAbst
 			_locationX += speed;
 			if( !_isChange )
 			{
-				g.drawImage( getRightDownImage(), getLocationX(), getLcationY(), null );
+				g.drawImage( getRightDownImage(), (int)getLocationX(), (int)getLocationY(), null );
 				_isChange = true;
 			}
 			else
 			{
-				g.drawImage( getRightUpImage(), getLocationX(), getLcationY(), null );
+				g.drawImage( getRightUpImage(), (int)getLocationX(), (int)getLocationY(), null );
 				_isChange = false;
 			}
 
@@ -87,12 +95,12 @@ public abstract class EnemyAbst
 			_locationX -= speed;
 			if( !_isChange )
 			{
-				g.drawImage( getLeftDownImage(), getLocationX(), getLcationY(), null );
+				g.drawImage( getLeftDownImage(), (int)getLocationX(), (int)getLocationY(), null );
 				_isChange = true;
 			}
 			else
 			{
-				g.drawImage( getLeftUpImage(), getLocationX(), getLcationY(), null );
+				g.drawImage( getLeftUpImage(), (int)getLocationX(), (int)getLocationY(), null );
 				_isChange = false;
 			}
 		}
@@ -102,7 +110,7 @@ public abstract class EnemyAbst
 	 * X좌표를 가져옵니다.
 	 * @return
 	 */
-	public int getLocationX()
+	public double getLocationX()
 	{
 		return _locationX;
 	}
@@ -111,16 +119,16 @@ public abstract class EnemyAbst
 	 * X좌표를 설정합니다.
 	 * @param locationX X좌표
 	 */
-	public void setLocationX( int locationX )
+	public void setLocationX( double locationX )
 	{
 		_locationX = locationX;
 	}
 
 	/**
 	 * Y좌표를 가져옵니다.
-	 * @return
+	 * @return Y좌표
 	 */
-	public int getLcationY()
+	public double getLocationY()
 	{
 		return _locationY;
 	}
@@ -129,9 +137,27 @@ public abstract class EnemyAbst
 	 * Y좌표를 설정합니다.
 	 * @param locationY Y좌표
 	 */
-	public void setLocationY( int locationY )
+	public void setLocationY( double locationY )
 	{
 		_locationY = locationY;
+	}
+
+	/**
+	 * Y좌표 초기값을 가져옵니다
+	 * @return Y좌표
+	 */
+	public double getDefaultLocationY()
+	{
+		return _defaultLocationY;
+	}
+
+	/**
+	 * Y좌표 초기값을 설정합니다.
+	 * @param y
+	 */
+	public void setDefaultLocationY( double y )
+	{
+		_defaultLocationY = y;
 	}
 
 	/**
@@ -201,10 +227,41 @@ public abstract class EnemyAbst
 	public abstract int getHeight();
 
 	/**
+	 * 이동 속도를 설정합니다
+	 * @param speed 적 이동 속도
+	 */
+	public void setSpeed( double speed )
+	{
+		_speed = speed;
+	};
+
+	/**
 	 * 이동 속도를 가져옵니다.
 	 * @return 이동 속도
 	 */
-	public abstract double getSpeed();
+	public double getSpeed()
+	{
+		return _speed;
+	};
+
+	/**
+	 * 이동 속도 초기값을 설정합니다
+	 * @param speed 적 이동 속도
+	 */
+	public void setDefaultSpeed( double speed )
+	{
+		_defaultSpeed = speed;
+		_speed = speed;
+	};
+
+	/**
+	 * 이동 속도 초기값을 가져옵니다.
+	 * @return 이동 속도
+	 */
+	public double getDefaultSpeed()
+	{
+		return _defaultSpeed;
+	};
 
 	/**
 	 * 적 케릭터 enum클래스

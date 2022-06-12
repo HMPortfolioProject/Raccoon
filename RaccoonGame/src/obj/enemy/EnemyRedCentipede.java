@@ -34,6 +34,8 @@ public class EnemyRedCentipede extends EnemyAbst
 			leftUpImage = new ImageIcon( ImageConstants.DIR_DPI_UHD + ImageConstants.ENEMY_LEFT_RED_CENTIPEDE_UP ).getImage();
 		}
 
+		setDefaultSpeed( 4 );
+
 	}
 
 	@Override
@@ -78,12 +80,6 @@ public class EnemyRedCentipede extends EnemyAbst
 	{
 		// 이미지 세로 사이즈는 다 동일하므로 아무거나 상관없음
 		return getLeftDownImage().getHeight( null );
-	}
-
-	@Override
-	public double getSpeed()
-	{
-		return 4;
 	}
 
 	@Override
